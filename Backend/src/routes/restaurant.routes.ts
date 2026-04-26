@@ -16,6 +16,10 @@ export class RestaurantRoute {
 
     this.router.get("/", (req, res) => this.controller.getAll(req, res));
 
+    this.router.put("/:id", uploadConfig.single("image"), (req, res) =>
+      this.controller.update(req, res),
+    );
+
     this.router.delete("/:id", (req, res) => this.controller.delete(req, res));
   }
 
