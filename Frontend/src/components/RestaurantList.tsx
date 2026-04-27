@@ -12,7 +12,7 @@ interface Props {
   onRefresh: () => Promise<void>;
 }
 
-const EmptyState = ({ hasSearch }: { hasSearch?: boolean }) => (
+const EmptyState = () => (
   <div className="col-span-full flex flex-col items-center justify-center py-24 sm:py-32 gap-6">
     {/* Layered rings */}
     <div className="relative flex items-center justify-center">
@@ -32,7 +32,7 @@ const EmptyState = ({ hasSearch }: { hasSearch?: boolean }) => (
           border: "1px solid rgba(99,102,241,0.15)",
         }}
       >
-        <span className="text-2xl">{hasSearch ? "🔍" : "🍽"}</span>
+        <span className="text-2xl">🍽</span>
       </div>
     </div>
 
@@ -41,15 +41,13 @@ const EmptyState = ({ hasSearch }: { hasSearch?: boolean }) => (
         className="font-semibold text-sm"
         style={{ color: "rgba(255,255,255,0.65)", letterSpacing: "-0.1px" }}
       >
-        {hasSearch ? "No results found" : "No restaurants yet"}
+        {"No restaurants yet"}
       </p>
       <p
         className="text-xs leading-relaxed max-w-[200px] mx-auto"
         style={{ color: "rgba(148,163,184,0.4)" }}
       >
-        {hasSearch
-          ? "Try adjusting your search terms"
-          : "Add your first restaurant to get started"}
+        {"Add your first restaurant to get started"}
       </p>
     </div>
   </div>

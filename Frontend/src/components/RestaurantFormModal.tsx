@@ -77,19 +77,10 @@ const RestaurantModal = ({
   mode,
   initialData,
 }: Props) => {
-  const [form, setForm] = useState<FormSchema>(() => {
-    if (mode === "edit" && initialData) {
-      return {
-        name: initialData.name,
-        address: initialData.address,
-        contact: initialData.contact,
-      };
-    }
-    return {
-      name: "",
-      address: "",
-      contact: "",
-    };
+  const [form, setForm] = useState<FormSchema>({
+    name: "",
+    address: "",
+    contact: "",
   });
   const [errors, setErrors] = useState<FieldErrors>({});
   const [touched, setTouched] = useState<
@@ -149,6 +140,33 @@ const RestaurantModal = ({
     const id = setTimeout(() => setVisible(true), 10);
     return () => clearTimeout(id);
   }, [isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const timeoutId = window.setTimeout(() => {
+      if (mode === "edit" && initialData) {
+        setForm({
+          name: initialData.name,
+          address: initialData.address,
+          contact: initialData.contact,
+        });
+        setPreview(initialData.imageUrl || null);
+        return;
+      }
+
+      setForm({
+        name: "",
+        address: "",
+        contact: "",
+      });
+      setPreview(null);
+    }, 0);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [isOpen, mode, initialData]);
 
   // ── ESC key ──
   useEffect(() => {

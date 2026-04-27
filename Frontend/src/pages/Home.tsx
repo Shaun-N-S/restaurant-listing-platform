@@ -4,15 +4,11 @@ import RestaurantList from "../components/RestaurantList";
 import RestaurantModal from "../components/RestaurantFormModal";
 import toast from "react-hot-toast";
 import type { Restaurant } from "../types/restaurant.types";
-import { useDebounce } from "../hooks/useDebounce";
 
 const Home = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
-  const [search, setSearch] = useState("");
-
-  const debouncedSearch = useDebounce(search, 350);
 
   const fetchRestaurants = async () => {
     setLoading(true);
@@ -46,12 +42,6 @@ const Home = () => {
       setRestaurants(prev);
     }
   };
-
-  const filtered = restaurants.filter(
-    (r) =>
-      r.name.toLowerCase().includes(debouncedSearch.toLowerCase()) ||
-      r.address.toLowerCase().includes(debouncedSearch.toLowerCase()),
-  );
 
   return (
     <div
@@ -89,65 +79,6 @@ const Home = () => {
               <span className="text-white font-semibold text-[15px] tracking-[-0.3px] hidden sm:block">
                 Fork<span className="text-indigo-400">Map</span>
               </span>
-            </div>
-
-            {/* Search */}
-            <div className="flex-1 max-w-xs sm:max-w-sm lg:max-w-md">
-              <div className="relative group">
-                <svg
-                  className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-slate-500 group-focus-within:text-indigo-400 transition-colors"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"
-                  />
-                </svg>
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Search restaurants..."
-                  className="w-full text-sm text-white placeholder:text-slate-600 rounded-xl pl-9 pr-9 py-2 outline-none transition-all"
-                  style={{
-                    background: "rgba(255,255,255,0.04)",
-                    border: "1px solid rgba(255,255,255,0.07)",
-                  }}
-                  onFocus={(e) => {
-                    e.currentTarget.style.borderColor = "rgba(99,102,241,0.4)";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.05)";
-                  }}
-                  onBlur={(e) => {
-                    e.currentTarget.style.borderColor =
-                      "rgba(255,255,255,0.07)";
-                    e.currentTarget.style.background = "rgba(255,255,255,0.04)";
-                  }}
-                />
-                {search && (
-                  <button
-                    onClick={() => setSearch("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white transition-colors"
-                  >
-                    <svg
-                      className="w-3.5 h-3.5"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M6 18L18 6M6 6l12 12"
-                      />
-                    </svg>
-                  </button>
-                )}
-              </div>
             </div>
 
             {/* Add button */}
@@ -196,46 +127,16 @@ const Home = () => {
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                 <span className="text-slate-400 text-sm">
-                  {debouncedSearch
-                    ? `${filtered.length} of ${restaurants.length} results`
-                    : `${restaurants.length} restaurant${restaurants.length !== 1 ? "s" : ""}`}
+                  {restaurants.length} restaurant
+                  {restaurants.length !== 1 ? "s" : ""}
                 </span>
               </div>
-              {debouncedSearch && filtered.length !== restaurants.length && (
-                <button
-                  onClick={() => setSearch("")}
-                  className="text-indigo-400 text-xs hover:text-indigo-300 transition-colors border border-indigo-500/20 rounded-lg px-2.5 py-1 hover:border-indigo-500/40"
-                >
-                  Clear
-                </button>
-              )}
             </div>
-
-            {/* Refresh hint */}
-            <button
-              onClick={fetchRestaurants}
-              className="flex items-center gap-1.5 text-slate-600 hover:text-slate-400 text-xs transition-colors"
-            >
-              <svg
-                className="w-3 h-3"
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"
-                />
-              </svg>
-              Refresh
-            </button>
           </div>
         )}
 
         <RestaurantList
-          restaurants={filtered}
+          restaurants={restaurants}
           loading={loading}
           onDelete={handleDelete}
           onRefresh={fetchRestaurants}
