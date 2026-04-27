@@ -68,24 +68,6 @@ const RestaurantCard = ({ restaurant: r, onDelete, onEdit }: Props) => {
             </span>
           </div>
         )}
-
-        {/* Status badge */}
-        <div
-          className="absolute top-3 right-3 flex items-center gap-1.5 rounded-full px-2.5 py-1"
-          style={{
-            background: "rgba(8,11,20,0.7)",
-            backdropFilter: "blur(12px)",
-            border: "1px solid rgba(255,255,255,0.08)",
-          }}
-        >
-          <div
-            className="w-1.5 h-1.5 rounded-full bg-emerald-400"
-            style={{ boxShadow: "0 0 6px rgba(52,211,153,0.8)" }}
-          />
-          <span className="text-[10px] font-medium tracking-wide text-white/50 uppercase">
-            Open
-          </span>
-        </div>
       </div>
 
       {/* Content */}
