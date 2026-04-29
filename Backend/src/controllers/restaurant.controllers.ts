@@ -2,6 +2,7 @@ import { Request, Response } from "express";
 import { IRestaurantService } from "../services/interfaces/IRestaurant.services";
 import { uploadToCloudinary } from "../utils/cloudinaryUpload";
 import { StatusCode } from "../utils/statusCode.enum";
+import { MESSAGES } from "../constants/messages";
 
 export class RestaurantController {
   constructor(private service: IRestaurantService) {}
@@ -10,7 +11,6 @@ export class RestaurantController {
     try {
       let imageUrl = "";
 
-      // upload file → cloudinary
       if (req.file) {
         imageUrl = await uploadToCloudinary(req.file);
       }
@@ -20,18 +20,41 @@ export class RestaurantController {
         imageUrl,
       });
 
-      res.status(201).json({ success: true, data });
+      res.status(StatusCode.CREATED).json({
+        success: true,
+        message: MESSAGES.RESTAURANT.CREATED,
+        data,
+      });
     } catch (err) {
-      res.status(500).json({
+      res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: err instanceof Error ? err.message : "Error",
+        message: err instanceof Error ? err.message : MESSAGES.RESTAURANT.ERROR,
       });
     }
   }
 
   async getAll(req: Request, res: Response) {
-    const data = await this.service.getAll();
-    res.status(StatusCode.OK).json({ success: true, data });
+    try {
+      const { q, page = "1", limit = "6" } = req.query;
+
+      const result = await this.service.getAll(
+        q as string,
+        Number(page),
+        Number(limit),
+      );
+
+      res.status(StatusCode.OK).json({
+        success: true,
+        message: MESSAGES.RESTAURANT.FETCH_SUCCESS,
+        data: result.data,
+        total: result.total,
+      });
+    } catch (err) {
+      res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: err instanceof Error ? err.message : MESSAGES.RESTAURANT.ERROR,
+      });
+    }
   }
 
   async update(req: Request, res: Response) {
@@ -40,7 +63,6 @@ export class RestaurantController {
 
       let imageUrl: string | undefined;
 
-      // if new image uploaded
       if (req.file) {
         imageUrl = await uploadToCloudinary(req.file);
       }
@@ -51,27 +73,46 @@ export class RestaurantController {
       });
 
       if (!updated) {
-        return res.status(404).json({
+        return res.status(StatusCode.NOT_FOUND).json({
           success: false,
-          message: "Restaurant not found",
+          message: MESSAGES.RESTAURANT.NOT_FOUND,
         });
       }
 
       res.status(StatusCode.OK).json({
         success: true,
-        message: "Updated successfully",
+        message: MESSAGES.RESTAURANT.UPDATED,
       });
     } catch (err) {
-      res.status(500).json({
+      res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
         success: false,
-        message: err instanceof Error ? err.message : "Error",
+        message: err instanceof Error ? err.message : MESSAGES.RESTAURANT.ERROR,
       });
     }
   }
 
   async delete(req: Request, res: Response) {
-    const { id } = req.params;
-    await this.service.remove(Number(id));
-    res.status(StatusCode.OK).json({ success: true });
+    try {
+      const { id } = req.params;
+
+      const deleted = await this.service.remove(Number(id));
+
+      if (!deleted) {
+        return res.status(StatusCode.NOT_FOUND).json({
+          success: false,
+          message: MESSAGES.RESTAURANT.NOT_FOUND,
+        });
+      }
+
+      res.status(StatusCode.OK).json({
+        success: true,
+        message: MESSAGES.RESTAURANT.DELETED,
+      });
+    } catch (err) {
+      res.status(StatusCode.INTERNAL_SERVER_ERROR).json({
+        success: false,
+        message: err instanceof Error ? err.message : MESSAGES.RESTAURANT.ERROR,
+      });
+    }
   }
 }

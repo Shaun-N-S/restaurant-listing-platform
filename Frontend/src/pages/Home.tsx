@@ -4,17 +4,27 @@ import RestaurantList from "../components/RestaurantList";
 import RestaurantModal from "../components/RestaurantFormModal";
 import toast from "react-hot-toast";
 import type { Restaurant } from "../types/restaurant.types";
+import { useDebounce } from "../hooks/useDebounce";
+import Pagination from "../components/Pagination";
 
 const Home = () => {
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
   const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const [total, setTotal] = useState(0);
+  const limit = 5;
+
+  const debouncedSearch = useDebounce(search, 500);
 
   const fetchRestaurants = async () => {
     setLoading(true);
     try {
-      const res = await getRestaurants();
-      setRestaurants(res.data.data);
+      const res = await getRestaurants(debouncedSearch, page, limit);
+
+      setRestaurants(res.data);
+      setTotal(res.total);
     } catch {
       toast.error("Failed to fetch restaurants");
     } finally {
@@ -23,11 +33,8 @@ const Home = () => {
   };
 
   useEffect(() => {
-    const load = async () => {
-      await fetchRestaurants();
-    };
-    load();
-  }, []);
+    fetchRestaurants();
+  }, [debouncedSearch, page]);
 
   const handleDelete = async (id: number) => {
     const prev = restaurants;
@@ -81,6 +88,34 @@ const Home = () => {
               </span>
             </div>
 
+            <div className="flex-1 max-w-md mx-4">
+              <div className="relative w-full">
+                {/* INPUT */}
+                <input
+                  type="text"
+                  placeholder="Search restaurants..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full px-3 py-2 pr-10 rounded-lg bg-[#111827] text-white border border-gray-700 outline-none"
+                />
+
+                {/* ✕ CLEAR BUTTON */}
+                {search && (
+                  <button
+                    onClick={() => {
+                      setSearch("");
+                      setPage(1);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-sm"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
             {/* Add button */}
             <button
               onClick={() => setShowModal(true)}
@@ -140,6 +175,12 @@ const Home = () => {
           loading={loading}
           onDelete={handleDelete}
           onRefresh={fetchRestaurants}
+        />
+        <Pagination
+          currentPage={page}
+          total={total}
+          limit={limit}
+          onPageChange={setPage}
         />
       </main>
 

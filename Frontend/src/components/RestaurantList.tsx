@@ -3,7 +3,6 @@ import type { Restaurant } from "../types/restaurant.types";
 import RestaurantCard from "./RestaurantCard";
 import ConfirmModal from "./ConfirmModal";
 import RestaurantModal from "./RestaurantFormModal";
-import SkeletonCard from "./SkeletonCard";
 
 interface Props {
   restaurants: Restaurant[];
@@ -89,31 +88,31 @@ const RestaurantList = ({
     }
   };
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <SkeletonCard key={i} delay={i * 100} />
-        ))}
-      </div>
-    );
-  }
-
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {restaurants.length === 0 ? (
-          <EmptyState />
-        ) : (
-          restaurants.map((r) => (
-            <RestaurantCard
-              key={r.id}
-              restaurant={r}
-              onDelete={handleDeleteClick}
-              onEdit={handleEdit}
-            />
-          ))
+      <div className="relative">
+        {/* 🔥 LOADING OVERLAY */}
+        {loading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-2xl">
+            <span className="text-white text-sm">Loading...</span>
+          </div>
         )}
+
+        {/* 🔥 KEEP OLD DATA */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {restaurants.length === 0 ? (
+            <EmptyState />
+          ) : (
+            restaurants.map((r) => (
+              <RestaurantCard
+                key={r.id}
+                restaurant={r}
+                onDelete={handleDeleteClick}
+                onEdit={handleEdit}
+              />
+            ))
+          )}
+        </div>
       </div>
 
       <RestaurantModal
