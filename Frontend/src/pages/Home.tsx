@@ -1,45 +1,56 @@
-import { useEffect, useState } from "react";
-import { getRestaurants, deleteRestaurant } from "../api/restaurant.api";
+import { useState } from "react";
+import {
+  deleteRestaurant,
+  type CreateRestaurantResponse,
+  type PaginatedRestaurantsResponse,
+} from "../api/restaurant.api";
 import RestaurantList from "../components/RestaurantList";
 import RestaurantModal from "../components/RestaurantFormModal";
 import toast from "react-hot-toast";
-import type { Restaurant } from "../types/restaurant.types";
+import { useDebounce } from "../hooks/useDebounce";
+import Pagination from "../components/Pagination";
+import { useRestaurants } from "../hooks/useRestaurants";
+import { queryClient } from "../main";
 
 const Home = () => {
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
+  const [search, setSearch] = useState("");
+  const [page, setPage] = useState(1);
+  const limit = 5;
 
-  const fetchRestaurants = async () => {
-    setLoading(true);
-    try {
-      const res = await getRestaurants();
-      setRestaurants(res.data.data);
-    } catch {
-      toast.error("Failed to fetch restaurants");
-    } finally {
-      setLoading(false);
-    }
-  };
+  const debouncedSearch = useDebounce(search, 500);
 
-  useEffect(() => {
-    const load = async () => {
-      await fetchRestaurants();
-    };
-    load();
-  }, []);
+  const { data, isLoading } = useRestaurants(debouncedSearch, page, limit);
+
+  const restaurants = data?.data ?? [];
+  const total = data?.total ?? 0;
 
   const handleDelete = async (id: number) => {
-    const prev = restaurants;
+    const queryKey = ["restaurants", debouncedSearch, page, limit] as const;
 
-    setRestaurants((curr) => curr.filter((r) => r.id !== id));
+    const previousData =
+      queryClient.getQueryData<PaginatedRestaurantsResponse>(queryKey);
+
+    queryClient.setQueryData<PaginatedRestaurantsResponse>(
+      queryKey,
+      (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          data: oldData.data.filter((r) => r.id !== id),
+          total: oldData.total - 1,
+        };
+      },
+    );
 
     try {
       await deleteRestaurant(id);
       toast.success("Restaurant removed");
     } catch {
       toast.error("Delete failed");
-      setRestaurants(prev);
+
+      queryClient.setQueryData(queryKey, previousData);
     }
   };
 
@@ -81,6 +92,34 @@ const Home = () => {
               </span>
             </div>
 
+            <div className="flex-1 max-w-md mx-4">
+              <div className="relative w-full">
+                {/* INPUT */}
+                <input
+                  type="text"
+                  placeholder="Search restaurants..."
+                  value={search}
+                  onChange={(e) => {
+                    setSearch(e.target.value);
+                    setPage(1);
+                  }}
+                  className="w-full px-3 py-2 pr-10 rounded-lg bg-[#111827] text-white border border-gray-700 outline-none"
+                />
+
+                {/* ✕ CLEAR BUTTON */}
+                {search && (
+                  <button
+                    onClick={() => {
+                      setSearch("");
+                      setPage(1);
+                    }}
+                    className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white text-sm"
+                  >
+                    ✕
+                  </button>
+                )}
+              </div>
+            </div>
             {/* Add button */}
             <button
               onClick={() => setShowModal(true)}
@@ -121,7 +160,7 @@ const Home = () => {
       {/* Main */}
       <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         {/* Stats row */}
-        {!loading && (
+        {!isLoading && (
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
@@ -137,16 +176,78 @@ const Home = () => {
 
         <RestaurantList
           restaurants={restaurants}
-          loading={loading}
+          loading={isLoading}
           onDelete={handleDelete}
-          onRefresh={fetchRestaurants}
+          onSuccess={(response: CreateRestaurantResponse) => {
+            const queryKey = [
+              "restaurants",
+              debouncedSearch,
+              page,
+              limit,
+            ] as const;
+
+            queryClient.setQueryData<PaginatedRestaurantsResponse>(
+              queryKey,
+              (oldData) => {
+                if (!oldData) return oldData;
+
+                return {
+                  ...oldData,
+                  data: oldData.data.map((r) =>
+                    r.id === response.data.id ? response.data : r,
+                  ),
+                };
+              },
+            );
+          }}
+        />
+        <Pagination
+          currentPage={page}
+          total={total}
+          limit={limit}
+          onPageChange={setPage}
         />
       </main>
 
       <RestaurantModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        onSuccess={fetchRestaurants}
+        onSuccess={(response: CreateRestaurantResponse) => {
+          setShowModal(false);
+
+          const queryKey = [
+            "restaurants",
+            debouncedSearch,
+            page,
+            limit,
+          ] as const;
+
+          queryClient.setQueryData<PaginatedRestaurantsResponse>(
+            queryKey,
+            (oldData) => {
+              if (!oldData) return oldData;
+
+              const exists = oldData.data.some(
+                (r) => r.id === response.data.id,
+              );
+
+              if (exists) {
+                return {
+                  ...oldData,
+                  data: oldData.data.map((r) =>
+                    r.id === response.data.id ? response.data : r,
+                  ),
+                };
+              }
+
+              return {
+                ...oldData,
+                data: [response.data, ...oldData.data],
+                total: oldData.total + 1,
+              };
+            },
+          );
+        }}
         mode="create"
         initialData={null}
       />

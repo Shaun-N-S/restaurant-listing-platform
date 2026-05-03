@@ -1,8 +1,15 @@
-import { IRestaurant } from "../../types/restaurant.types";
+import {
+  IPaginatedRestaurants,
+  IRestaurant,
+} from "../../types/restaurant.types";
 
 export interface IRestaurantRepository {
   create(data: IRestaurant): Promise<IRestaurant>;
-  findAll(): Promise<IRestaurant[]>;
-  update(id: number, data: Partial<IRestaurant>): Promise<number>;
+  findAll(
+    query?: string,
+    page?: number,
+    limit?: number,
+  ): Promise<IPaginatedRestaurants>;
+  update(id: number, data: Partial<IRestaurant>): Promise<IRestaurant | null>;
   delete(id: number): Promise<number>;
 }

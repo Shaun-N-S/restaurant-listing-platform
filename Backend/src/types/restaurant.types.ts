@@ -5,3 +5,8 @@ export interface IRestaurant {
   contact: string;
   imageUrl?: string;
 }
+
+export interface IPaginatedRestaurants {
+  data: IRestaurant[];
+  total: number;
+}

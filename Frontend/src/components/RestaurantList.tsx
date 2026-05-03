@@ -3,13 +3,13 @@ import type { Restaurant } from "../types/restaurant.types";
 import RestaurantCard from "./RestaurantCard";
 import ConfirmModal from "./ConfirmModal";
 import RestaurantModal from "./RestaurantFormModal";
-import SkeletonCard from "./SkeletonCard";
+import type { CreateRestaurantResponse } from "../api/restaurant.api";
 
 interface Props {
   restaurants: Restaurant[];
   loading: boolean;
   onDelete: (id: number) => Promise<void>;
-  onRefresh: () => Promise<void>;
+  onSuccess: (data: CreateRestaurantResponse) => void;
 }
 
 const EmptyState = () => (
@@ -57,7 +57,7 @@ const RestaurantList = ({
   restaurants,
   loading,
   onDelete,
-  onRefresh,
+  onSuccess,
 }: Props) => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -89,31 +89,31 @@ const RestaurantList = ({
     }
   };
 
-  if (loading) {
-    return (
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {Array.from({ length: 6 }).map((_, i) => (
-          <SkeletonCard key={i} delay={i * 100} />
-        ))}
-      </div>
-    );
-  }
-
   return (
     <>
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
-        {restaurants.length === 0 ? (
-          <EmptyState />
-        ) : (
-          restaurants.map((r) => (
-            <RestaurantCard
-              key={r.id}
-              restaurant={r}
-              onDelete={handleDeleteClick}
-              onEdit={handleEdit}
-            />
-          ))
+      <div className="relative">
+        {/* 🔥 LOADING OVERLAY */}
+        {loading && (
+          <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-2xl">
+            <span className="text-white text-sm">Loading...</span>
+          </div>
         )}
+
+        {/* 🔥 KEEP OLD DATA */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+          {restaurants.length === 0 ? (
+            <EmptyState />
+          ) : (
+            restaurants.map((r) => (
+              <RestaurantCard
+                key={r.id}
+                restaurant={r}
+                onDelete={handleDeleteClick}
+                onEdit={handleEdit}
+              />
+            ))
+          )}
+        </div>
       </div>
 
       <RestaurantModal
@@ -122,7 +122,11 @@ const RestaurantList = ({
           setModalOpen(false);
           setEditData(null);
         }}
-        onSuccess={onRefresh}
+        onSuccess={(res) => {
+          onSuccess(res);
+          setModalOpen(false);
+          setEditData(null);
+        }}
         mode={mode}
         initialData={editData}
       />
