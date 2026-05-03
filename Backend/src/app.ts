@@ -26,6 +26,10 @@ export class App {
 
     const route = new RestaurantRoute(controller);
     this.app.use("/api/restaurants", route.getRouter());
+
+    this.app.get("/health", (req, res) => {
+      res.status(200).send("OK");
+    });
   }
 
   public getApp() {

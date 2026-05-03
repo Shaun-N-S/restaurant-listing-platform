@@ -1,7 +1,11 @@
 import { useState, useEffect, useCallback } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { z } from "zod";
-import { createRestaurant, updateRestaurant } from "../api/restaurant.api";
+import {
+  createRestaurant,
+  updateRestaurant,
+  type CreateRestaurantResponse,
+} from "../api/restaurant.api";
 import toast from "react-hot-toast";
 import type { Restaurant } from "../types/restaurant.types";
 
@@ -33,7 +37,7 @@ type FieldErrors = Partial<Record<keyof FormSchema, string>>;
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: () => void;
+  onSuccess: (data: CreateRestaurantResponse) => void;
   mode: "create" | "edit";
   initialData?: Restaurant | null;
 }
@@ -223,14 +227,20 @@ const RestaurantModal = ({
 
     try {
       setLoading(true);
+
+      let res: CreateRestaurantResponse;
+
       if (mode === "create") {
-        await createRestaurant(formData);
+        res = await createRestaurant(formData);
         toast.success("Restaurant added successfully");
       } else if (mode === "edit" && initialData) {
-        await updateRestaurant(initialData.id, formData);
+        res = await updateRestaurant(initialData.id, formData);
         toast.success("Restaurant updated successfully");
+      } else {
+        return;
       }
-      onSuccess();
+
+      onSuccess(res);
       handleClose();
     } catch {
       toast.error(

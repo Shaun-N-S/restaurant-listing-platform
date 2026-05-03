@@ -11,6 +11,11 @@ export interface PaginatedRestaurantsResponse {
   total: number;
 }
 
+export interface CreateRestaurantResponse {
+  success: boolean;
+  data: Restaurant;
+}
+
 export const getRestaurants = async (
   query?: string,
   page: number = 1,
@@ -27,7 +32,9 @@ export const getRestaurants = async (
   return res.data;
 };
 
-export const createRestaurant = async (data: FormData) => {
+export const createRestaurant = async (
+  data: FormData,
+): Promise<CreateRestaurantResponse> => {
   const res = await API.post(API_ROUTES.RESTAURANTS.BASE, data, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -37,7 +44,10 @@ export const createRestaurant = async (data: FormData) => {
   return res.data;
 };
 
-export const updateRestaurant = async (id: number, data: FormData) => {
+export const updateRestaurant = async (
+  id: number,
+  data: FormData,
+): Promise<CreateRestaurantResponse> => {
   const res = await API.put(API_ROUTES.RESTAURANTS.BY_ID(id), data, {
     headers: {
       "Content-Type": "multipart/form-data",
@@ -47,7 +57,7 @@ export const updateRestaurant = async (id: number, data: FormData) => {
   return res.data;
 };
 
-export const deleteRestaurant = async (id: number) => {
+export const deleteRestaurant = async (id: number): Promise<CreateRestaurantResponse> => {
   const res = await API.delete(API_ROUTES.RESTAURANTS.BY_ID(id));
   return res.data;
 };

@@ -1,5 +1,4 @@
-const db = require("../../models");
-const { Restaurant } = db;
+import { Restaurant } from "../models";
 import { IRestaurantRepository } from "./interfaces/IRestaurant.repository";
 import { IPaginatedRestaurants, IRestaurant } from "../types/restaurant.types";
 import { Op } from "sequelize";
@@ -12,7 +11,7 @@ export class RestaurantRepository implements IRestaurantRepository {
   async findAll(
     query?: string,
     page: number = 1,
-    limit: number = 6
+    limit: number = 6,
   ): Promise<IPaginatedRestaurants> {
     const offset = (page - 1) * limit;
 
@@ -39,12 +38,14 @@ export class RestaurantRepository implements IRestaurantRepository {
   }
 
   async update(id: number, data: Partial<IRestaurant>) {
-    const [updated] = await Restaurant.update(data, { where: { id } });
-    return updated;
+    await Restaurant.update(data, { where: { id } });
+
+    const updatedRestaurant = await Restaurant.findByPk(id);
+
+    return updatedRestaurant;
   }
 
   async delete(id: number) {
     return await Restaurant.destroy({ where: { id } });
   }
-  
 }

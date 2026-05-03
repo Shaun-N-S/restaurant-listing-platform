@@ -3,12 +3,13 @@ import type { Restaurant } from "../types/restaurant.types";
 import RestaurantCard from "./RestaurantCard";
 import ConfirmModal from "./ConfirmModal";
 import RestaurantModal from "./RestaurantFormModal";
+import type { CreateRestaurantResponse } from "../api/restaurant.api";
 
 interface Props {
   restaurants: Restaurant[];
   loading: boolean;
   onDelete: (id: number) => Promise<void>;
-  onRefresh: () => Promise<void>;
+  onSuccess: (data: CreateRestaurantResponse) => void;
 }
 
 const EmptyState = () => (
@@ -56,7 +57,7 @@ const RestaurantList = ({
   restaurants,
   loading,
   onDelete,
-  onRefresh,
+  onSuccess,
 }: Props) => {
   const [selectedId, setSelectedId] = useState<number | null>(null);
   const [confirmOpen, setConfirmOpen] = useState(false);
@@ -121,7 +122,11 @@ const RestaurantList = ({
           setModalOpen(false);
           setEditData(null);
         }}
-        onSuccess={onRefresh}
+        onSuccess={(res) => {
+          onSuccess(res);
+          setModalOpen(false);
+          setEditData(null);
+        }}
         mode={mode}
         initialData={editData}
       />

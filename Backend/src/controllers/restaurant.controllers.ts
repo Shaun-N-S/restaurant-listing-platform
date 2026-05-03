@@ -82,6 +82,7 @@ export class RestaurantController {
       res.status(StatusCode.OK).json({
         success: true,
         message: MESSAGES.RESTAURANT.UPDATED,
+        data: updated,
       });
     } catch (err) {
       res.status(StatusCode.INTERNAL_SERVER_ERROR).json({

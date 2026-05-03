@@ -1,52 +1,56 @@
-import { useEffect, useState } from "react";
-import { getRestaurants, deleteRestaurant } from "../api/restaurant.api";
+import { useState } from "react";
+import {
+  deleteRestaurant,
+  type CreateRestaurantResponse,
+  type PaginatedRestaurantsResponse,
+} from "../api/restaurant.api";
 import RestaurantList from "../components/RestaurantList";
 import RestaurantModal from "../components/RestaurantFormModal";
 import toast from "react-hot-toast";
-import type { Restaurant } from "../types/restaurant.types";
 import { useDebounce } from "../hooks/useDebounce";
 import Pagination from "../components/Pagination";
+import { useRestaurants } from "../hooks/useRestaurants";
+import { queryClient } from "../main";
 
 const Home = () => {
-  const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-  const [loading, setLoading] = useState(false);
   const [showModal, setShowModal] = useState(false);
   const [search, setSearch] = useState("");
   const [page, setPage] = useState(1);
-  const [total, setTotal] = useState(0);
   const limit = 5;
 
   const debouncedSearch = useDebounce(search, 500);
 
-  const fetchRestaurants = async () => {
-    setLoading(true);
-    try {
-      const res = await getRestaurants(debouncedSearch, page, limit);
+  const { data, isLoading } = useRestaurants(debouncedSearch, page, limit);
 
-      setRestaurants(res.data);
-      setTotal(res.total);
-    } catch {
-      toast.error("Failed to fetch restaurants");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    fetchRestaurants();
-  }, [debouncedSearch, page]);
+  const restaurants = data?.data ?? [];
+  const total = data?.total ?? 0;
 
   const handleDelete = async (id: number) => {
-    const prev = restaurants;
+    const queryKey = ["restaurants", debouncedSearch, page, limit] as const;
 
-    setRestaurants((curr) => curr.filter((r) => r.id !== id));
+    const previousData =
+      queryClient.getQueryData<PaginatedRestaurantsResponse>(queryKey);
+
+    queryClient.setQueryData<PaginatedRestaurantsResponse>(
+      queryKey,
+      (oldData) => {
+        if (!oldData) return oldData;
+
+        return {
+          ...oldData,
+          data: oldData.data.filter((r) => r.id !== id),
+          total: oldData.total - 1,
+        };
+      },
+    );
 
     try {
       await deleteRestaurant(id);
       toast.success("Restaurant removed");
     } catch {
       toast.error("Delete failed");
-      setRestaurants(prev);
+
+      queryClient.setQueryData(queryKey, previousData);
     }
   };
 
@@ -156,7 +160,7 @@ const Home = () => {
       {/* Main */}
       <main className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-10">
         {/* Stats row */}
-        {!loading && (
+        {!isLoading && (
           <div className="flex items-center justify-between mb-6 sm:mb-8">
             <div className="flex items-center gap-3">
               <div className="flex items-center gap-2">
@@ -172,9 +176,30 @@ const Home = () => {
 
         <RestaurantList
           restaurants={restaurants}
-          loading={loading}
+          loading={isLoading}
           onDelete={handleDelete}
-          onRefresh={fetchRestaurants}
+          onSuccess={(response: CreateRestaurantResponse) => {
+            const queryKey = [
+              "restaurants",
+              debouncedSearch,
+              page,
+              limit,
+            ] as const;
+
+            queryClient.setQueryData<PaginatedRestaurantsResponse>(
+              queryKey,
+              (oldData) => {
+                if (!oldData) return oldData;
+
+                return {
+                  ...oldData,
+                  data: oldData.data.map((r) =>
+                    r.id === response.data.id ? response.data : r,
+                  ),
+                };
+              },
+            );
+          }}
         />
         <Pagination
           currentPage={page}
@@ -187,7 +212,42 @@ const Home = () => {
       <RestaurantModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        onSuccess={fetchRestaurants}
+        onSuccess={(response: CreateRestaurantResponse) => {
+          setShowModal(false);
+
+          const queryKey = [
+            "restaurants",
+            debouncedSearch,
+            page,
+            limit,
+          ] as const;
+
+          queryClient.setQueryData<PaginatedRestaurantsResponse>(
+            queryKey,
+            (oldData) => {
+              if (!oldData) return oldData;
+
+              const exists = oldData.data.some(
+                (r) => r.id === response.data.id,
+              );
+
+              if (exists) {
+                return {
+                  ...oldData,
+                  data: oldData.data.map((r) =>
+                    r.id === response.data.id ? response.data : r,
+                  ),
+                };
+              }
+
+              return {
+                ...oldData,
+                data: [response.data, ...oldData.data],
+                total: oldData.total + 1,
+              };
+            },
+          );
+        }}
         mode="create"
         initialData={null}
       />

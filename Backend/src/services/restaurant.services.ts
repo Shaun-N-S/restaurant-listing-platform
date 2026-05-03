@@ -15,7 +15,7 @@ export class RestaurantService implements IRestaurantService {
   async getAll(
     query?: string,
     page: number = 1,
-    limit: number = 6
+    limit: number = 6,
   ): Promise<IPaginatedRestaurants> {
     return this.repo.findAll(query, page, limit);
   }
