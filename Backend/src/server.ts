@@ -26,6 +26,7 @@ const startServer = async () => {
 
       break;
     } catch (err) {
+      console.error(err);
       console.log("❌ DB not ready, retrying in 5 sec...");
       retries--;
       await new Promise((res) => setTimeout(res, 5000));

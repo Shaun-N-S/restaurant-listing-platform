@@ -6,9 +6,6 @@ export class RestaurantService implements IRestaurantService {
   constructor(private repo: IRestaurantRepository) {}
 
   async create(data: IRestaurant) {
-    if (!data.name || !data.address || !data.contact) {
-      throw new Error("Required fields missing");
-    }
     return this.repo.create(data);
   }
 

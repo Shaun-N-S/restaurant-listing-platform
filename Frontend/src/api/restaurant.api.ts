@@ -15,6 +15,10 @@ export interface CreateRestaurantResponse {
   success: boolean;
   data: Restaurant;
 }
+export interface DeleteRestaurantResponse {
+  success: boolean;
+  message: string;
+}
 
 export const getRestaurants = async (
   query?: string,
@@ -57,7 +61,9 @@ export const updateRestaurant = async (
   return res.data;
 };
 
-export const deleteRestaurant = async (id: number): Promise<CreateRestaurantResponse> => {
+export const deleteRestaurant = async (
+  id: number,
+): Promise<DeleteRestaurantResponse> => {
   const res = await API.delete(API_ROUTES.RESTAURANTS.BY_ID(id));
   return res.data;
 };

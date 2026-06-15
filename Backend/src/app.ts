@@ -4,6 +4,7 @@ import { RestaurantRepository } from "./repositories/restaurant.repository";
 import { RestaurantService } from "./services/restaurant.services";
 import { RestaurantController } from "./controllers/restaurant.controllers";
 import { RestaurantRoute } from "./routes/restaurant.routes";
+import { errorHandler } from "./middlewares/error.middleware";
 
 export class App {
   private app: Application;
@@ -12,6 +13,7 @@ export class App {
     this.app = express();
     this.setMiddleware();
     this.setRoutes();
+    this.app.use(errorHandler);
   }
 
   private setMiddleware() {

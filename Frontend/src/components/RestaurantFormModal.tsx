@@ -8,25 +8,33 @@ import {
 } from "../api/restaurant.api";
 import toast from "react-hot-toast";
 import type { Restaurant } from "../types/restaurant.types";
+import { getApiError } from "../utils/getApiError";
+import { VALIDATION } from "../constants/validation";
+import { MESSAGES } from "../constants/messages";
+
+const MAX_FILE_SIZE = VALIDATION.MAX_FILE_SIZE;
+
+const ALLOWED_TYPES = VALIDATION.ALLOWED_IMAGE_TYPES;
 
 const restaurantSchema = z.object({
   name: z
     .string()
-    .min(2, "Name must be at least 2 characters")
-    .max(80, "Name must be under 80 characters")
-    .regex(/\S/, "Name cannot be blank"),
+    .trim()
+    .min(2, "Restaurant name must be at least 2 characters")
+    .max(80, "Restaurant name cannot exceed 80 characters"),
+
   address: z
     .string()
+    .trim()
     .min(5, "Address must be at least 5 characters")
-    .max(200, "Address is too long"),
+    .max(200, "Address cannot exceed 200 characters"),
+
   contact: z
     .string()
-    .min(7, "Contact must be at least 7 characters")
-    .max(20, "Contact number is too long")
-    .regex(
-      /^[+]?[\d\s\-().]{7,20}$/,
-      "Enter a valid phone number (e.g. +1 555 000 0000)",
-    ),
+    .trim()
+    .min(7, "Contact number must be at least 7 characters")
+    .max(20, "Contact number cannot exceed 20 characters")
+    .regex(/^[+]?[\d\s\-().]{7,20}$/, "Enter a valid phone number"),
 });
 
 type FormSchema = z.infer<typeof restaurantSchema>;
@@ -172,6 +180,14 @@ const RestaurantModal = ({
     };
   }, [isOpen, mode, initialData]);
 
+  useEffect(() => {
+    return () => {
+      if (preview?.startsWith("blob:")) {
+        URL.revokeObjectURL(preview);
+      }
+    };
+  }, [preview]);
+
   // ── ESC key ──
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -200,19 +216,41 @@ const RestaurantModal = ({
 
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
     const f = e.target.files?.[0];
-    if (f) {
-      setFile(f);
-      setPreview(URL.createObjectURL(f));
+    if (!f) return;
+
+    if (!ALLOWED_TYPES.includes(f.type)) {
+      toast.error("Only JPG, PNG and WEBP images are allowed");
+      return;
     }
+
+    if (f.size > MAX_FILE_SIZE) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
   };
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
     e.preventDefault();
+
     const f = e.dataTransfer.files?.[0];
-    if (f && f.type.startsWith("image/")) {
-      setFile(f);
-      setPreview(URL.createObjectURL(f));
+
+    if (!f) return;
+
+    if (!ALLOWED_TYPES.includes(f.type)) {
+      toast.error("Only JPG, PNG and WEBP images are allowed");
+      return;
     }
+
+    if (f.size > MAX_FILE_SIZE) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+
+    setFile(f);
+    setPreview(URL.createObjectURL(f));
   };
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
@@ -232,22 +270,18 @@ const RestaurantModal = ({
 
       if (mode === "create") {
         res = await createRestaurant(formData);
-        toast.success("Restaurant added successfully");
+        toast.success(MESSAGES.RESTAURANT.CREATED);
       } else if (mode === "edit" && initialData) {
         res = await updateRestaurant(initialData.id, formData);
-        toast.success("Restaurant updated successfully");
+        toast.success(MESSAGES.RESTAURANT.UPDATED);
       } else {
         return;
       }
 
       onSuccess(res);
       handleClose();
-    } catch {
-      toast.error(
-        mode === "create"
-          ? "Failed to add restaurant"
-          : "Failed to update restaurant",
-      );
+    } catch (error) {
+      toast.error(getApiError(error));
     } finally {
       setLoading(false);
     }
@@ -495,7 +529,7 @@ const RestaurantModal = ({
                       className="text-[10px] mt-0.5"
                       style={{ color: "rgba(148,163,184,0.3)" }}
                     >
-                      PNG, JPG, WEBP up to 10MB
+                      PNG, JPG, WEBP up to 5MB
                     </p>
                   </div>
                 </div>

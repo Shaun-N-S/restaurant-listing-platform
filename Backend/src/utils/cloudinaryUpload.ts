@@ -1,5 +1,6 @@
 import cloudinary from "../config/cloudinary";
 import streamifier from "streamifier";
+import { MESSAGES } from "../constants/messages";
 
 export const uploadToCloudinary = (file: Express.Multer.File) => {
   return new Promise<string>((resolve, reject) => {
@@ -7,7 +8,11 @@ export const uploadToCloudinary = (file: Express.Multer.File) => {
       { folder: "restaurants" },
       (error, result) => {
         if (error) return reject(error);
-        resolve(result?.secure_url || "");
+        if (!result?.secure_url) {
+          return reject(new Error(MESSAGES.CLOUDINARY.UPLOAD_FAILED));
+        }
+
+        resolve(result.secure_url);
       },
     );
 
