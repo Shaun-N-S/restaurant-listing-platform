@@ -11,6 +11,8 @@ import { useDebounce } from "../hooks/useDebounce";
 import Pagination from "../components/Pagination";
 import { useRestaurants } from "../hooks/useRestaurants";
 import { queryClient } from "../main";
+import { MESSAGES } from "../constants/messages";
+import { QUERY_KEYS } from "../constants/queryKeys";
 
 const Home = () => {
   const [showModal, setShowModal] = useState(false);
@@ -26,7 +28,7 @@ const Home = () => {
   const total = data?.total ?? 0;
 
   const handleDelete = async (id: number) => {
-    const queryKey = ["restaurants", debouncedSearch, page, limit] as const;
+    const queryKey = QUERY_KEYS.RESTAURANTS(debouncedSearch, page, limit);
 
     const previousData =
       queryClient.getQueryData<PaginatedRestaurantsResponse>(queryKey);
@@ -46,9 +48,12 @@ const Home = () => {
 
     try {
       await deleteRestaurant(id);
-      toast.success("Restaurant removed");
+      if (restaurants.length === 1 && page > 1) {
+        setPage(page - 1);
+      }
+      toast.success(MESSAGES.RESTAURANT.DELETED);
     } catch {
-      toast.error("Delete failed");
+      toast.error(MESSAGES.RESTAURANT.DELETE_FAILED);
 
       queryClient.setQueryData(queryKey, previousData);
     }
@@ -166,8 +171,8 @@ const Home = () => {
               <div className="flex items-center gap-2">
                 <div className="w-1.5 h-1.5 rounded-full bg-indigo-500" />
                 <span className="text-slate-400 text-sm">
-                  {restaurants.length} restaurant
-                  {restaurants.length !== 1 ? "s" : ""}
+                  {total} restaurant
+                  {total !== 1 ? "s" : ""}
                 </span>
               </div>
             </div>
@@ -179,12 +184,11 @@ const Home = () => {
           loading={isLoading}
           onDelete={handleDelete}
           onSuccess={(response: CreateRestaurantResponse) => {
-            const queryKey = [
-              "restaurants",
+            const queryKey = QUERY_KEYS.RESTAURANTS(
               debouncedSearch,
               page,
               limit,
-            ] as const;
+            );
 
             queryClient.setQueryData<PaginatedRestaurantsResponse>(
               queryKey,
@@ -215,12 +219,7 @@ const Home = () => {
         onSuccess={(response: CreateRestaurantResponse) => {
           setShowModal(false);
 
-          const queryKey = [
-            "restaurants",
-            debouncedSearch,
-            page,
-            limit,
-          ] as const;
+          const queryKey = QUERY_KEYS.RESTAURANTS(debouncedSearch, page, limit);
 
           queryClient.setQueryData<PaginatedRestaurantsResponse>(
             queryKey,
@@ -242,7 +241,7 @@ const Home = () => {
 
               return {
                 ...oldData,
-                data: [response.data, ...oldData.data],
+                data: [response.data, ...oldData.data].slice(0, limit),
                 total: oldData.total + 1,
               };
             },

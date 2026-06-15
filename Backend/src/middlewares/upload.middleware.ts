@@ -1,17 +1,25 @@
 import multer from "multer";
 
-const storage = multer.memoryStorage();
+import {
+  MAX_FILE_SIZE,
+  ALLOWED_IMAGE_TYPES,
+} from "../constants/upload.constants";
+import { MESSAGES } from "../constants/messages";
 
-const fileFilter: multer.Options["fileFilter"] = (_req, file, cb) => {
-  if (file.mimetype.startsWith("image/")) {
-    cb(null, true);
-  } else {
-    cb(new Error("Only images allowed"));
-  }
-};
+const storage = multer.memoryStorage();
 
 export const uploadConfig = multer({
   storage,
-  fileFilter,
-  limits: { fileSize: 5 * 1024 * 1024 },
+
+  limits: {
+    fileSize: MAX_FILE_SIZE,
+  },
+
+  fileFilter(req, file, cb) {
+    if (!ALLOWED_IMAGE_TYPES.includes(file.mimetype)) {
+      return cb(new Error(MESSAGES.IMAGE.INVALID_TYPE));
+    }
+
+    cb(null, true);
+  },
 });

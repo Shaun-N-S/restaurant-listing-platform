@@ -5,7 +5,7 @@ import { Op } from "sequelize";
 
 export class RestaurantRepository implements IRestaurantRepository {
   async create(data: IRestaurant) {
-    return await Restaurant.create(data);
+    return Restaurant.create(data);
   }
 
   async findAll(
@@ -46,6 +46,6 @@ export class RestaurantRepository implements IRestaurantRepository {
   }
 
   async delete(id: number) {
-    return await Restaurant.destroy({ where: { id } });
+    return Restaurant.destroy({ where: { id } });
   }
 }
