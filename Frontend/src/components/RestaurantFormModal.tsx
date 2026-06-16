@@ -21,20 +21,24 @@ const restaurantSchema = z.object({
     .string()
     .trim()
     .min(2, "Restaurant name must be at least 2 characters")
-    .max(80, "Restaurant name cannot exceed 80 characters"),
+    .max(80, "Restaurant name cannot exceed 80 characters")
+    .regex(/[A-Za-z]/, "Name must contain at least one letter"),
 
   address: z
     .string()
     .trim()
     .min(5, "Address must be at least 5 characters")
-    .max(200, "Address cannot exceed 200 characters"),
+    .max(200, "Address cannot exceed 200 characters")
+    .regex(/[A-Za-z0-9]/, "Address must contain at least one letter or number"),
 
   contact: z
     .string()
     .trim()
-    .min(7, "Contact number must be at least 7 characters")
-    .max(20, "Contact number cannot exceed 20 characters")
-    .regex(/^[+]?[\d\s\-().]{7,20}$/, "Enter a valid phone number"),
+    .regex(/^[+]?[\d\s\-().]{7,20}$/, "Enter a valid phone number")
+    .refine(
+      (value) => !/^0+$/.test(value.replace(/\D/g, "")),
+      "Phone number cannot contain only zeros",
+    ),
 });
 
 type FormSchema = z.infer<typeof restaurantSchema>;

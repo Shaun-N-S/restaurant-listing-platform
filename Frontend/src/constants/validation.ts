@@ -8,6 +8,10 @@ export const VALIDATION = {
   CONTACT_MIN: 7,
   CONTACT_MAX: 20,
 
+  NAME_REGEX: /[A-Za-z]/,
+
+  ADDRESS_REGEX: /[A-Za-z0-9]/,
+
   MAX_FILE_SIZE: 5 * 1024 * 1024,
 
   ALLOWED_IMAGE_TYPES: [
