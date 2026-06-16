@@ -1,154 +1,60 @@
 # 🍽️ ForkMap - Restaurant Listing Platform
 
-A full-stack Restaurant Listing Platform built using React, Node.js, Express, PostgreSQL, Sequelize, and TypeScript.
+A full-stack restaurant management application built with React, TypeScript, Node.js, Express, PostgreSQL, Sequelize, and Docker.
 
-ForkMap allows users to create, view, update, delete, search, and manage restaurant listings with image uploads and pagination support.
-
----
-
-## 🚀 Features
-
-### Restaurant Management
-- View all restaurants
-- Add new restaurants
-- Edit existing restaurants
-- Delete restaurants
-- Upload restaurant images
-
-### Search & Pagination
-- Debounced search functionality
-- Server-side pagination
-- Dynamic restaurant filtering
-
-### Validation & Error Handling
-- Frontend validation using Zod
-- Backend validation using Zod
-- Image type validation
-- Image size validation
-- Proper API error handling
-- User-friendly error messages
-
-### UI/UX
-- Responsive design
-- Modern dark-themed interface
-- Loading states
-- Delete confirmation modal
-- Toast notifications
-- Empty state handling
-
-### Performance
-- React Query caching
-- Optimistic updates
-- Debounced API requests
-- Production-ready build
+The application allows users to create, update, delete, search, and manage restaurant listings with image uploads and pagination support.
 
 ---
 
-# 🛠️ Tech Stack
+## Features
 
-## Frontend
-
-- React
-- TypeScript
-- Vite
-- Tailwind CSS
-- React Query (TanStack Query)
-- Axios
-- React Hot Toast
-- Zod
-
-## Backend
-
-- Node.js
-- Express.js
-- TypeScript
-- Sequelize ORM
-- PostgreSQL
-- Multer
-- Cloudinary
-- Zod
-- CORS
-- dotenv
-
-## DevOps
-
-- Docker
-- Docker Compose
+* Create, update, and delete restaurants
+* Upload restaurant images
+* Search restaurants
+* Pagination
+* Image validation
+* File size restriction (5 MB)
+* Frontend and backend validation using Zod
+* API error handling
+* Responsive UI
+* React Query caching and optimistic updates
 
 ---
 
-# 📁 Project Structure
+## Tech Stack
 
-```txt
-ForkMap
-│
-├── Backend
-│   ├── src
-│   │   ├── controllers
-│   │   ├── services
-│   │   ├── repositories
-│   │   ├── routes
-│   │   ├── middlewares
-│   │   ├── validators
-│   │   ├── models
-│   │   ├── config
-│   │   ├── constants
-│   │   ├── utils
-│   │   └── server.ts
-│   │
-│   ├── Dockerfile
-│   ├── docker-compose.yml
-│   ├── package.json
-│   └── tsconfig.json
-│
-├── Frontend
-│   ├── src
-│   │   ├── api
-│   │   ├── components
-│   │   ├── pages
-│   │   ├── hooks
-│   │   ├── constants
-│   │   ├── types
-│   │   ├── utils
-│   │   ├── App.tsx
-│   │   └── main.tsx
-│   │
-│   ├── vite.config.ts
-│   ├── package.json
-│   └── tsconfig.json
-│
-└── README.md
-```
+### Frontend
+
+* React
+* TypeScript
+* Vite
+* Tailwind CSS
+* TanStack Query
+* Axios
+* React Hot Toast
+* Zod
+
+### Backend
+
+* Node.js
+* Express
+* TypeScript
+* PostgreSQL
+* Sequelize
+* Multer
+* Cloudinary
+* Zod
+
+### DevOps
+
+* Docker
+* Docker Compose
 
 ---
 
-# 📸 Screenshots
+## Environment Variables
 
-Add screenshots here before submission.
-
-## Home Page
-
-![Home](./screenshots/home.png)
-
-## Add Restaurant
-
-![Add Restaurant](./screenshots/add-restaurant.png)
-
-## Edit Restaurant
-
-![Edit Restaurant](./screenshots/edit-restaurant.png)
-
-## Delete Restaurant
-
-![Delete Restaurant](./screenshots/delete-restaurant.png)
-
----
-
-# ⚙️ Environment Variables
-
-## Backend (.env)
-
-Create a `.env` file inside the Backend folder.
+### Backend (.env)
 
 ```env
 PORT=5000
@@ -164,11 +70,7 @@ CLOUDINARY_API_KEY=your_api_key
 CLOUDINARY_API_SECRET=your_api_secret
 ```
 
----
-
-## Frontend (.env)
-
-Create a `.env` file inside the Frontend folder.
+### Frontend (.env)
 
 ```env
 VITE_API_URL=http://localhost:5000
@@ -176,46 +78,31 @@ VITE_API_URL=http://localhost:5000
 
 ---
 
-# 🏃 Local Installation
+## Local Setup
 
-## 1. Clone Repository
-
-```bash
-git clone <repository-url>
-```
-
-```bash
-cd ForkMap
-```
-
----
-
-## 2. Backend Setup
+### Backend
 
 ```bash
 cd Backend
 npm install
-```
-
-### Run Development Server
-
-```bash
 npm run dev
 ```
 
-### Build Backend
+### Frontend
 
 ```bash
-npm run build
+cd Frontend
+npm install
+npm run dev
 ```
 
-### Start Production Server
+Frontend:
 
-```bash
-npm start
+```txt
+http://localhost:5173
 ```
 
-Backend runs on:
+Backend:
 
 ```txt
 http://localhost:5000
@@ -223,54 +110,16 @@ http://localhost:5000
 
 ---
 
-## 3. Frontend Setup
+## Docker Setup
 
-```bash
-cd Frontend
-npm install
-```
-
-### Run Development Server
-
-```bash
-npm run dev
-```
-
-### Build Frontend
-
-```bash
-npm run build
-```
-
-### Preview Production Build
-
-```bash
-npm run preview
-```
-
-Frontend runs on:
-
-```txt
-http://localhost:5173
-```
-
----
-
-# 🐳 Docker Setup
-
-The backend and PostgreSQL database can be started using Docker Compose.
-
-## Start Containers
+Start backend and PostgreSQL:
 
 ```bash
 cd Backend
-
 docker-compose up --build
 ```
 
----
-
-## Stop Containers
+Stop containers:
 
 ```bash
 docker-compose down
@@ -278,151 +127,44 @@ docker-compose down
 
 ---
 
-## Docker Services
+## API Endpoints
 
-### PostgreSQL
-
-```yaml
-postgres:
-  image: postgres:15
-```
-
-Runs on:
-
-```txt
-localhost:5432
-```
+| Method | Endpoint         | Description         |
+| ------ | ---------------- | ------------------- |
+| GET    | /restaurants     | Get all restaurants |
+| POST   | /restaurants     | Create restaurant   |
+| PUT    | /restaurants/:id | Update restaurant   |
+| DELETE | /restaurants/:id | Delete restaurant   |
 
 ---
 
-### Backend
+## Validation Rules
 
-```yaml
-backend:
-  build: .
-```
+### Restaurant Name
 
-Runs on:
+* Minimum 2 characters
+* Maximum 80 characters
 
-```txt
-localhost:5000
-```
+### Address
 
----
+* Minimum 5 characters
+* Maximum 200 characters
 
-# 📡 API Endpoints
+### Contact Number
 
-## Get Restaurants
+* Minimum 7 characters
+* Maximum 20 characters
 
-```http
-GET /restaurants
-```
+### Image Upload
 
-### Query Parameters
+Allowed formats:
 
-```txt
-q
-page
-limit
-```
+* JPG
+* JPEG
+* PNG
+* WEBP
 
----
-
-## Create Restaurant
-
-```http
-POST /restaurants
-```
-
-### Form Data
-
-```json
-{
-  "name": "The Golden Fork",
-  "address": "42 Oak Street",
-  "contact": "+91 9876543210",
-  "image": "file"
-}
-```
-
----
-
-## Update Restaurant
-
-```http
-PUT /restaurants/:id
-```
-
-### Form Data
-
-```json
-{
-  "name": "Updated Restaurant",
-  "address": "Updated Address",
-  "contact": "+91 9876543210",
-  "image": "file"
-}
-```
-
----
-
-## Delete Restaurant
-
-```http
-DELETE /restaurants/:id
-```
-
----
-
-# 🗄️ Database Schema
-
-## Restaurants Table
-
-| Field | Type |
-|---------|---------|
-| id | Integer |
-| name | String |
-| address | String |
-| contact | String |
-| imageUrl | String |
-| createdAt | Date |
-| updatedAt | Date |
-
----
-
-# ✅ Validation Rules
-
-## Restaurant Name
-
-- Minimum 2 characters
-- Maximum 80 characters
-
----
-
-## Address
-
-- Minimum 5 characters
-- Maximum 200 characters
-
----
-
-## Contact Number
-
-- Minimum 7 characters
-- Maximum 20 characters
-
----
-
-## Image Upload
-
-Allowed Types:
-
-- JPG
-- JPEG
-- PNG
-- WEBP
-
-Maximum Size:
+Maximum size:
 
 ```txt
 5 MB
@@ -430,87 +172,16 @@ Maximum Size:
 
 ---
 
-# 🔒 Error Handling
+## Build
 
-The application handles:
-
-- Validation errors
-- Invalid IDs
-- Invalid pagination values
-- Image upload failures
-- Unsupported image formats
-- File size violations
-- Cloudinary upload errors
-- Internal server errors
-
----
-
-# 📦 Available Scripts
-
-## Backend
+### Backend
 
 ```bash
-npm run dev
 npm run build
-npm start
 ```
 
----
-
-## Frontend
+### Frontend
 
 ```bash
-npm run dev
 npm run build
-npm run preview
 ```
-
----
-
-# 🎯 Assignment Requirements Covered
-
-✅ Show Restaurants
-
-✅ Add Restaurants
-
-✅ Update Restaurants
-
-✅ Delete Restaurants
-
-✅ PostgreSQL Database
-
-✅ Sequelize ORM
-
-✅ Axios API Calls
-
-✅ Responsive UI
-
-✅ Search Functionality
-
-✅ Pagination
-
-✅ Image Upload
-
-✅ Validation
-
-✅ Error Handling
-
-✅ Docker Support
-
-✅ TypeScript
-
----
-
-# 👨‍💻 Author
-
-### Shaun N S
-
-MERN Stack Developer
-
----
-
-## 📌 Project Status
-
-Machine Task Submission Project
-
-Built using modern full-stack development practices with React, Node.js, PostgreSQL, Sequelize, Docker, and TypeScript.
