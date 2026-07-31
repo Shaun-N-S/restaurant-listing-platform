@@ -7,6 +7,7 @@ import {
   createRestaurantSchema,
   updateRestaurantSchema,
 } from "../validators/restaurant.validator";
+import { ResponseHelper } from "../utils/response.helper";
 
 export class RestaurantController {
   private validateId(id: string): number {
@@ -36,11 +37,12 @@ export class RestaurantController {
         imageUrl,
       });
 
-      res.status(StatusCode.CREATED).json({
-        success: true,
-        message: MESSAGES.RESTAURANT.CREATED,
+      return ResponseHelper.success(
+        res,
+        MESSAGES.RESTAURANT.CREATED,
         data,
-      });
+        StatusCode.CREATED,
+      );
     } catch (err) {
       next(err);
     }
@@ -67,12 +69,17 @@ export class RestaurantController {
         limitNumber,
       );
 
-      res.status(StatusCode.OK).json({
-        success: true,
-        message: MESSAGES.RESTAURANT.FETCH_SUCCESS,
-        data: result.data,
-        total: result.total,
-      });
+      return ResponseHelper.success(
+        res,
+        MESSAGES.RESTAURANT.FETCH_SUCCESS,
+        result.data,
+        StatusCode.OK,
+        {
+          total: result.total,
+          page: pageNumber,
+          limit: limitNumber,
+        },
+      );
     } catch (err) {
       next(err);
     }
@@ -96,17 +103,19 @@ export class RestaurantController {
       });
 
       if (!updated) {
-        return res.status(StatusCode.NOT_FOUND).json({
-          success: false,
-          message: MESSAGES.RESTAURANT.NOT_FOUND,
-        });
+        return ResponseHelper.error(
+          res,
+          MESSAGES.RESTAURANT.NOT_FOUND,
+          StatusCode.NOT_FOUND,
+        );
       }
 
-      res.status(StatusCode.OK).json({
-        success: true,
-        message: MESSAGES.RESTAURANT.UPDATED,
-        data: updated,
-      });
+      return ResponseHelper.success(
+        res,
+        MESSAGES.RESTAURANT.UPDATED,
+        updated,
+        StatusCode.OK,
+      );
     } catch (err) {
       next(err);
     }
@@ -119,16 +128,19 @@ export class RestaurantController {
       const deleted = await this.service.remove(restaurantId);
 
       if (!deleted) {
-        return res.status(StatusCode.NOT_FOUND).json({
-          success: false,
-          message: MESSAGES.RESTAURANT.NOT_FOUND,
-        });
+        return ResponseHelper.error(
+          res,
+          MESSAGES.RESTAURANT.NOT_FOUND,
+          StatusCode.NOT_FOUND,
+        );
       }
 
-      res.status(StatusCode.OK).json({
-        success: true,
-        message: MESSAGES.RESTAURANT.DELETED,
-      });
+      return ResponseHelper.success(
+        res,
+        MESSAGES.RESTAURANT.DELETED,
+        null,
+        StatusCode.OK,
+      );
     } catch (err) {
       next(err);
     }
