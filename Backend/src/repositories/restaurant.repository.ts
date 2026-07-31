@@ -46,6 +46,10 @@ export class RestaurantRepository implements IRestaurantRepository {
   }
 
   async delete(id: number) {
-    return Restaurant.destroy({ where: { id } });
+    const deletedCount = await Restaurant.destroy({
+      where: { id },
+    });
+
+    return deletedCount > 0;
   }
 }

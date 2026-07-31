@@ -8,13 +8,17 @@ import {
   updateRestaurantSchema,
 } from "../validators/restaurant.validator";
 import { ResponseHelper } from "../utils/response.helper";
+import {
+  BadRequestException,
+  NotFoundException,
+} from "../exceptions/custom.exceptions";
 
 export class RestaurantController {
   private validateId(id: string): number {
     const restaurantId = Number(id);
 
     if (isNaN(restaurantId) || restaurantId <= 0) {
-      throw new Error(MESSAGES.COMMON.INVALID_ID);
+      throw new BadRequestException(MESSAGES.COMMON.INVALID_ID);
     }
 
     return restaurantId;
@@ -56,11 +60,11 @@ export class RestaurantController {
       const limitNumber = Number(limit);
 
       if (isNaN(pageNumber) || pageNumber < 1) {
-        throw new Error(MESSAGES.PAGINATION.INVALID_PAGE);
+        throw new BadRequestException(MESSAGES.PAGINATION.INVALID_PAGE);
       }
 
       if (isNaN(limitNumber) || limitNumber < 1) {
-        throw new Error(MESSAGES.PAGINATION.INVALID_LIMIT);
+        throw new BadRequestException(MESSAGES.PAGINATION.INVALID_LIMIT);
       }
 
       const result = await this.service.getAll(
@@ -103,11 +107,7 @@ export class RestaurantController {
       });
 
       if (!updated) {
-        return ResponseHelper.error(
-          res,
-          MESSAGES.RESTAURANT.NOT_FOUND,
-          StatusCode.NOT_FOUND,
-        );
+        throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
       }
 
       return ResponseHelper.success(
@@ -128,11 +128,7 @@ export class RestaurantController {
       const deleted = await this.service.remove(restaurantId);
 
       if (!deleted) {
-        return ResponseHelper.error(
-          res,
-          MESSAGES.RESTAURANT.NOT_FOUND,
-          StatusCode.NOT_FOUND,
-        );
+        throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
       }
 
       return ResponseHelper.success(

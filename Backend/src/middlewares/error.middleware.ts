@@ -1,10 +1,11 @@
 import { Request, Response, NextFunction } from "express";
-import { ZodError } from "zod";
 import multer from "multer";
+import { ZodError } from "zod";
 
-import { StatusCode } from "../utils/statusCode.enum";
 import { ResponseHelper } from "../utils/response.helper";
+import { StatusCode } from "../utils/statusCode.enum";
 import { MESSAGES } from "../constants/messages";
+import { AppException } from "../exceptions/custom.exceptions";
 
 export const errorHandler = (
   err: Error,
@@ -28,27 +29,8 @@ export const errorHandler = (
     );
   }
 
-  if (err.message === MESSAGES.IMAGE.INVALID_TYPE) {
-    return ResponseHelper.error(res, err.message, StatusCode.BAD_REQUEST);
-  }
-
-  if (err.message === MESSAGES.COMMON.INVALID_ID) {
-    return ResponseHelper.error(res, err.message, StatusCode.BAD_REQUEST);
-  }
-
-  if (
-    err.message === MESSAGES.PAGINATION.INVALID_PAGE ||
-    err.message === MESSAGES.PAGINATION.INVALID_LIMIT
-  ) {
-    return ResponseHelper.error(res, err.message, StatusCode.BAD_REQUEST);
-  }
-
-  if (err.message === MESSAGES.CLOUDINARY.UPLOAD_FAILED) {
-    return ResponseHelper.error(
-      res,
-      err.message,
-      StatusCode.INTERNAL_SERVER_ERROR,
-    );
+  if (err instanceof AppException) {
+    return ResponseHelper.error(res, err.message, err.statusCode);
   }
 
   return ResponseHelper.error(
