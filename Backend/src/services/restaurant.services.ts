@@ -1,6 +1,8 @@
 import { IRestaurantService } from "./interfaces/IRestaurant.services";
 import { IRestaurantRepository } from "../repositories/interfaces/IRestaurant.repository";
 import { IPaginatedRestaurants, IRestaurant } from "../types/restaurant.types";
+import { NotFoundException } from "../exceptions/custom.exceptions";
+import { MESSAGES } from "../constants/messages";
 
 export class RestaurantService implements IRestaurantService {
   constructor(private repo: IRestaurantRepository) {}
@@ -17,11 +19,31 @@ export class RestaurantService implements IRestaurantService {
     return this.repo.findAll(query, page, limit);
   }
 
-  async update(id: number, data: Partial<IRestaurant>) {
-    return this.repo.update(id, data);
+  async update(id: number, data: Partial<IRestaurant>): Promise<IRestaurant> {
+    const restaurant = await this.repo.findById(id);
+
+    if (!restaurant) {
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
+    }
+
+    const updatedRestaurant = await this.repo.update(id, data);
+
+    if (!updatedRestaurant) {
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
+    }
+
+    return updatedRestaurant;
   }
 
   async remove(id: number) {
-    return this.repo.delete(id);
+    const restaurant = await this.repo.findById(id);
+
+    if (!restaurant) {
+      throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
+    }
+
+    await this.repo.delete(id);
+
+    return true;
   }
 }

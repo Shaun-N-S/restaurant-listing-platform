@@ -1,10 +1,8 @@
 import express, { type Application } from "express";
 import cors from "cors";
-import { RestaurantRepository } from "./repositories/restaurant.repository";
-import { RestaurantService } from "./services/restaurant.services";
-import { RestaurantController } from "./controllers/restaurant.controllers";
 import { RestaurantRoute } from "./routes/restaurant.routes";
 import { errorHandler } from "./middlewares/error.middleware";
+import { container } from "./config/container";
 
 export class App {
   private app: Application;
@@ -22,14 +20,11 @@ export class App {
   }
 
   private setRoutes() {
-    const repo = new RestaurantRepository();
-    const service = new RestaurantService(repo);
-    const controller = new RestaurantController(service);
+    const restaurantRoute = new RestaurantRoute(container.restaurantController);
 
-    const route = new RestaurantRoute(controller);
-    this.app.use("/api/restaurants", route.getRouter());
+    this.app.use("/api/restaurants", restaurantRoute.getRouter());
 
-    this.app.get("/health", (req, res) => {
+    this.app.get("/health", (_, res) => {
       res.status(200).send("OK");
     });
   }

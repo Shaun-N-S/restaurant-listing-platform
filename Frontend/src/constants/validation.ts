@@ -20,4 +20,8 @@ export const VALIDATION = {
     "image/png",
     "image/webp",
   ] as string[],
+
+  CONTACT_DIGITS_MIN: 7,
+
+  CONTACT_DIGITS_MAX: 10,
 } as const;

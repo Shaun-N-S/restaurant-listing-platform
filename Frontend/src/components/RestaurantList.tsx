@@ -1,15 +1,15 @@
 import { useState } from "react";
-import type { Restaurant } from "../types/restaurant.types";
 import RestaurantCard from "./RestaurantCard";
 import ConfirmModal from "./ConfirmModal";
 import RestaurantModal from "./RestaurantFormModal";
-import type { CreateRestaurantResponse } from "../api/restaurant.api";
+import type { ApiResponse } from "../types/api.types";
+import type { Restaurant } from "../types/restaurant.types";
 
 interface Props {
   restaurants: Restaurant[];
   loading: boolean;
   onDelete: (id: number) => Promise<void>;
-  onSuccess: (data: CreateRestaurantResponse) => void;
+  onSuccess: (data: ApiResponse<Restaurant>) => void;
 }
 
 const EmptyState = () => (

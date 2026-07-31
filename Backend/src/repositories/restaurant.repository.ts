@@ -37,6 +37,10 @@ export class RestaurantRepository implements IRestaurantRepository {
     };
   }
 
+  async findById(id: number): Promise<IRestaurant | null> {
+    return Restaurant.findByPk(id);
+  }
+
   async update(id: number, data: Partial<IRestaurant>) {
     await Restaurant.update(data, { where: { id } });
 
@@ -46,6 +50,10 @@ export class RestaurantRepository implements IRestaurantRepository {
   }
 
   async delete(id: number) {
-    return Restaurant.destroy({ where: { id } });
+    const deletedCount = await Restaurant.destroy({
+      where: { id },
+    });
+
+    return deletedCount > 0;
   }
 }

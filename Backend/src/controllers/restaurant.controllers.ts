@@ -1,32 +1,37 @@
 import { NextFunction, Request, Response } from "express";
 import { IRestaurantService } from "../services/interfaces/IRestaurant.services";
-import { uploadToCloudinary } from "../utils/cloudinaryUpload";
+import { IImageService } from "../services/interfaces/IImage.services";
 import { StatusCode } from "../utils/statusCode.enum";
 import { MESSAGES } from "../constants/messages";
 import {
   createRestaurantSchema,
   updateRestaurantSchema,
 } from "../validators/restaurant.validator";
+import { ResponseHelper } from "../utils/response.helper";
+import { BadRequestException } from "../exceptions/custom.exceptions";
 
 export class RestaurantController {
   private validateId(id: string): number {
     const restaurantId = Number(id);
 
     if (isNaN(restaurantId) || restaurantId <= 0) {
-      throw new Error(MESSAGES.COMMON.INVALID_ID);
+      throw new BadRequestException(MESSAGES.COMMON.INVALID_ID);
     }
 
     return restaurantId;
   }
 
-  constructor(private service: IRestaurantService) {}
+  constructor(
+    private service: IRestaurantService,
+    private imageService: IImageService,
+  ) {}
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       let imageUrl = "";
 
       if (req.file) {
-        imageUrl = await uploadToCloudinary(req.file);
+        imageUrl = await this.imageService.upload(req.file);
       }
 
       const validatedData = createRestaurantSchema.parse(req.body);
@@ -36,11 +41,12 @@ export class RestaurantController {
         imageUrl,
       });
 
-      res.status(StatusCode.CREATED).json({
-        success: true,
-        message: MESSAGES.RESTAURANT.CREATED,
+      return ResponseHelper.success(
+        res,
+        MESSAGES.RESTAURANT.CREATED,
         data,
-      });
+        StatusCode.CREATED,
+      );
     } catch (err) {
       next(err);
     }
@@ -54,11 +60,11 @@ export class RestaurantController {
       const limitNumber = Number(limit);
 
       if (isNaN(pageNumber) || pageNumber < 1) {
-        throw new Error(MESSAGES.PAGINATION.INVALID_PAGE);
+        throw new BadRequestException(MESSAGES.PAGINATION.INVALID_PAGE);
       }
 
       if (isNaN(limitNumber) || limitNumber < 1) {
-        throw new Error(MESSAGES.PAGINATION.INVALID_LIMIT);
+        throw new BadRequestException(MESSAGES.PAGINATION.INVALID_LIMIT);
       }
 
       const result = await this.service.getAll(
@@ -67,12 +73,17 @@ export class RestaurantController {
         limitNumber,
       );
 
-      res.status(StatusCode.OK).json({
-        success: true,
-        message: MESSAGES.RESTAURANT.FETCH_SUCCESS,
-        data: result.data,
-        total: result.total,
-      });
+      return ResponseHelper.success(
+        res,
+        MESSAGES.RESTAURANT.FETCH_SUCCESS,
+        result.data,
+        StatusCode.OK,
+        {
+          total: result.total,
+          page: pageNumber,
+          limit: limitNumber,
+        },
+      );
     } catch (err) {
       next(err);
     }
@@ -85,7 +96,7 @@ export class RestaurantController {
       let imageUrl: string | undefined;
 
       if (req.file) {
-        imageUrl = await uploadToCloudinary(req.file);
+        imageUrl = await this.imageService.upload(req.file);
       }
 
       const validatedData = updateRestaurantSchema.parse(req.body);
@@ -95,18 +106,12 @@ export class RestaurantController {
         ...(imageUrl && { imageUrl }),
       });
 
-      if (!updated) {
-        return res.status(StatusCode.NOT_FOUND).json({
-          success: false,
-          message: MESSAGES.RESTAURANT.NOT_FOUND,
-        });
-      }
-
-      res.status(StatusCode.OK).json({
-        success: true,
-        message: MESSAGES.RESTAURANT.UPDATED,
-        data: updated,
-      });
+      return ResponseHelper.success(
+        res,
+        MESSAGES.RESTAURANT.UPDATED,
+        updated,
+        StatusCode.OK,
+      );
     } catch (err) {
       next(err);
     }
@@ -116,19 +121,14 @@ export class RestaurantController {
     try {
       const restaurantId = this.validateId(req.params.id as string);
 
-      const deleted = await this.service.remove(restaurantId);
+      await this.service.remove(restaurantId);
 
-      if (!deleted) {
-        return res.status(StatusCode.NOT_FOUND).json({
-          success: false,
-          message: MESSAGES.RESTAURANT.NOT_FOUND,
-        });
-      }
-
-      res.status(StatusCode.OK).json({
-        success: true,
-        message: MESSAGES.RESTAURANT.DELETED,
-      });
+      return ResponseHelper.success(
+        res,
+        MESSAGES.RESTAURANT.DELETED,
+        null,
+        StatusCode.OK,
+      );
     } catch (err) {
       next(err);
     }
