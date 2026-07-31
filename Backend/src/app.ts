@@ -5,6 +5,7 @@ import { RestaurantService } from "./services/restaurant.services";
 import { RestaurantController } from "./controllers/restaurant.controllers";
 import { RestaurantRoute } from "./routes/restaurant.routes";
 import { errorHandler } from "./middlewares/error.middleware";
+import { ImageService } from "./services/image.services";
 
 export class App {
   private app: Application;
@@ -24,7 +25,8 @@ export class App {
   private setRoutes() {
     const repo = new RestaurantRepository();
     const service = new RestaurantService(repo);
-    const controller = new RestaurantController(service);
+    const imageService = new ImageService();
+    const controller = new RestaurantController(service, imageService);
 
     const route = new RestaurantRoute(controller);
     this.app.use("/api/restaurants", route.getRouter());

@@ -1,6 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import { IRestaurantService } from "../services/interfaces/IRestaurant.services";
-import { uploadToCloudinary } from "../utils/cloudinaryUpload";
+import { IImageService } from "../services/interfaces/IImage.services";
 import { StatusCode } from "../utils/statusCode.enum";
 import { MESSAGES } from "../constants/messages";
 import {
@@ -24,14 +24,17 @@ export class RestaurantController {
     return restaurantId;
   }
 
-  constructor(private service: IRestaurantService) {}
+  constructor(
+    private service: IRestaurantService,
+    private imageService: IImageService,
+  ) {}
 
   async create(req: Request, res: Response, next: NextFunction) {
     try {
       let imageUrl = "";
 
       if (req.file) {
-        imageUrl = await uploadToCloudinary(req.file);
+        imageUrl = await this.imageService.upload(req.file);
       }
 
       const validatedData = createRestaurantSchema.parse(req.body);
@@ -96,7 +99,7 @@ export class RestaurantController {
       let imageUrl: string | undefined;
 
       if (req.file) {
-        imageUrl = await uploadToCloudinary(req.file);
+        imageUrl = await this.imageService.upload(req.file);
       }
 
       const validatedData = updateRestaurantSchema.parse(req.body);
