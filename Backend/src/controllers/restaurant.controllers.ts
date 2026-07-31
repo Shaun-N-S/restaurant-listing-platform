@@ -8,10 +8,7 @@ import {
   updateRestaurantSchema,
 } from "../validators/restaurant.validator";
 import { ResponseHelper } from "../utils/response.helper";
-import {
-  BadRequestException,
-  NotFoundException,
-} from "../exceptions/custom.exceptions";
+import { BadRequestException } from "../exceptions/custom.exceptions";
 
 export class RestaurantController {
   private validateId(id: string): number {
@@ -109,10 +106,6 @@ export class RestaurantController {
         ...(imageUrl && { imageUrl }),
       });
 
-      if (!updated) {
-        throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
-      }
-
       return ResponseHelper.success(
         res,
         MESSAGES.RESTAURANT.UPDATED,
@@ -128,11 +121,7 @@ export class RestaurantController {
     try {
       const restaurantId = this.validateId(req.params.id as string);
 
-      const deleted = await this.service.remove(restaurantId);
-
-      if (!deleted) {
-        throw new NotFoundException(MESSAGES.RESTAURANT.NOT_FOUND);
-      }
+      await this.service.remove(restaurantId);
 
       return ResponseHelper.success(
         res,

@@ -10,6 +10,6 @@ export interface IRestaurantService {
     page?: number,
     limit?: number,
   ): Promise<IPaginatedRestaurants>;
-  update(id: number, data: Partial<IRestaurant>): Promise<IRestaurant | null>;
+  update(id: number, data: Partial<IRestaurant>): Promise<IRestaurant>;
   remove(id: number): Promise<boolean>;
 }

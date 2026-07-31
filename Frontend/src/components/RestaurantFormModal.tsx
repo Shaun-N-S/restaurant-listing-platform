@@ -1,13 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import type { ChangeEvent, FormEvent } from "react";
 import { z } from "zod";
-import {
-  createRestaurant,
-  updateRestaurant,
-  type CreateRestaurantResponse,
-} from "../api/restaurant.api";
-import toast from "react-hot-toast";
+import { createRestaurant, updateRestaurant } from "../api/restaurant.api";
+
+import type { ApiResponse } from "../types/api.types";
+
 import type { Restaurant } from "../types/restaurant.types";
+import toast from "react-hot-toast";
 import { getApiError } from "../utils/getApiError";
 import { VALIDATION } from "../constants/validation";
 import { MESSAGES } from "../constants/messages";
@@ -20,16 +19,31 @@ const restaurantSchema = z.object({
   name: z
     .string()
     .trim()
-    .min(2, "Restaurant name must be at least 2 characters")
-    .max(80, "Restaurant name cannot exceed 80 characters")
-    .regex(/[A-Za-z]/, "Name must contain at least one letter"),
+    .min(
+      VALIDATION.NAME_MIN,
+      `Restaurant name must be at least ${VALIDATION.NAME_MIN} characters`,
+    )
+    .max(
+      VALIDATION.NAME_MAX,
+      `Restaurant name cannot exceed ${VALIDATION.NAME_MAX} characters`,
+    )
+    .regex(VALIDATION.NAME_REGEX, "Name must contain at least one letter"),
 
   address: z
     .string()
     .trim()
-    .min(5, "Address must be at least 5 characters")
-    .max(200, "Address cannot exceed 200 characters")
-    .regex(/[A-Za-z0-9]/, "Address must contain at least one letter or number"),
+    .min(
+      VALIDATION.ADDRESS_MIN,
+      `Address must be at least ${VALIDATION.ADDRESS_MIN} characters`,
+    )
+    .max(
+      VALIDATION.ADDRESS_MAX,
+      `Address cannot exceed ${VALIDATION.ADDRESS_MAX} characters`,
+    )
+    .regex(
+      VALIDATION.ADDRESS_REGEX,
+      "Address must contain at least one letter or number",
+    ),
 
   contact: z
     .string()
@@ -49,7 +63,7 @@ type FieldErrors = Partial<Record<keyof FormSchema, string>>;
 interface Props {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess: (data: CreateRestaurantResponse) => void;
+  onSuccess: (data: ApiResponse<Restaurant>) => void;
   mode: "create" | "edit";
   initialData?: Restaurant | null;
 }
@@ -270,7 +284,7 @@ const RestaurantModal = ({
     try {
       setLoading(true);
 
-      let res: CreateRestaurantResponse;
+      let res: ApiResponse<Restaurant>;
 
       if (mode === "create") {
         res = await createRestaurant(formData);

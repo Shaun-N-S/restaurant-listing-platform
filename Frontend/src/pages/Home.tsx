@@ -1,9 +1,9 @@
 import { useState } from "react";
-import {
-  deleteRestaurant,
-  type CreateRestaurantResponse,
-  type PaginatedRestaurantsResponse,
-} from "../api/restaurant.api";
+import { deleteRestaurant } from "../api/restaurant.api";
+
+import type { ApiResponse, PaginatedApiResponse } from "../types/api.types";
+
+import type { Restaurant } from "../types/restaurant.types";
 import RestaurantList from "../components/RestaurantList";
 import RestaurantModal from "../components/RestaurantFormModal";
 import toast from "react-hot-toast";
@@ -25,15 +25,15 @@ const Home = () => {
   const { data, isLoading } = useRestaurants(debouncedSearch, page, limit);
 
   const restaurants = data?.data ?? [];
-  const total = data?.total ?? 0;
+  const total = data?.meta.total ?? 0;
 
   const handleDelete = async (id: number) => {
     const queryKey = QUERY_KEYS.RESTAURANTS(debouncedSearch, page, limit);
 
     const previousData =
-      queryClient.getQueryData<PaginatedRestaurantsResponse>(queryKey);
+      queryClient.getQueryData<PaginatedApiResponse<Restaurant>>(queryKey);
 
-    queryClient.setQueryData<PaginatedRestaurantsResponse>(
+    queryClient.setQueryData<PaginatedApiResponse<Restaurant>>(
       queryKey,
       (oldData) => {
         if (!oldData) return oldData;
@@ -41,7 +41,10 @@ const Home = () => {
         return {
           ...oldData,
           data: oldData.data.filter((r) => r.id !== id),
-          total: oldData.total - 1,
+          meta: {
+            ...oldData.meta,
+            total: oldData.meta.total - 1,
+          },
         };
       },
     );
@@ -183,14 +186,14 @@ const Home = () => {
           restaurants={restaurants}
           loading={isLoading}
           onDelete={handleDelete}
-          onSuccess={(response: CreateRestaurantResponse) => {
+          onSuccess={(response: ApiResponse<Restaurant>) => {
             const queryKey = QUERY_KEYS.RESTAURANTS(
               debouncedSearch,
               page,
               limit,
             );
 
-            queryClient.setQueryData<PaginatedRestaurantsResponse>(
+            queryClient.setQueryData<PaginatedApiResponse<Restaurant>>(
               queryKey,
               (oldData) => {
                 if (!oldData) return oldData;
@@ -216,12 +219,12 @@ const Home = () => {
       <RestaurantModal
         isOpen={showModal}
         onClose={() => setShowModal(false)}
-        onSuccess={(response: CreateRestaurantResponse) => {
+        onSuccess={(response: ApiResponse<Restaurant>) => {
           setShowModal(false);
 
           const queryKey = QUERY_KEYS.RESTAURANTS(debouncedSearch, page, limit);
 
-          queryClient.setQueryData<PaginatedRestaurantsResponse>(
+          queryClient.setQueryData<PaginatedApiResponse<Restaurant>>(
             queryKey,
             (oldData) => {
               if (!oldData) return oldData;
@@ -242,7 +245,10 @@ const Home = () => {
               return {
                 ...oldData,
                 data: [response.data, ...oldData.data].slice(0, limit),
-                total: oldData.total + 1,
+                meta: {
+                  ...oldData.meta,
+                  total: oldData.meta.total + 1,
+                },
               };
             },
           );
