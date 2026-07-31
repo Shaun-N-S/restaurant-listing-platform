@@ -48,11 +48,19 @@ const restaurantSchema = z.object({
   contact: z
     .string()
     .trim()
-    .regex(/^[+]?[\d\s\-().]{7,20}$/, "Enter a valid phone number")
-    .refine(
-      (value) => !/^0+$/.test(value.replace(/\D/g, "")),
-      "Phone number cannot contain only zeros",
-    ),
+    .refine((value) => {
+      const digits = value.replace(/\D/g, "");
+
+      return (
+        digits.length >= VALIDATION.CONTACT_DIGITS_MIN &&
+        digits.length <= VALIDATION.CONTACT_DIGITS_MAX
+      );
+    }, `Phone number must contain ${VALIDATION.CONTACT_DIGITS_MIN}-${VALIDATION.CONTACT_DIGITS_MAX} digits`)
+    .refine((value) => {
+      const digits = value.replace(/\D/g, "");
+
+      return !/^0+$/.test(digits);
+    }, "Phone number cannot contain only zeros"),
 });
 
 type FormSchema = z.infer<typeof restaurantSchema>;
@@ -92,7 +100,7 @@ const FIELDS: {
   {
     name: "contact",
     label: "Contact Number",
-    placeholder: "+1 (555) 000-0000",
+    placeholder: "e.g. 1 234 567 890",
     icon: "📞",
     type: "tel",
   },
