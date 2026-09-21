@@ -1,4 +1,6 @@
+import { memo, useEffect, useState } from "react";
 import type { Restaurant } from "../types/restaurant.types";
+import { getOptimizedImageUrl } from "../utils/getOptimizedImageUrl";
 
 interface Props {
   restaurant: Restaurant;
@@ -7,6 +9,14 @@ interface Props {
 }
 
 const RestaurantCard = ({ restaurant: r, onDelete, onEdit }: Props) => {
+  const [imageFailed, setImageFailed] = useState(false);
+
+  useEffect(() => {
+    setImageFailed(false);
+  }, [r.imageUrl]);
+
+  const showImage = Boolean(r.imageUrl) && !imageFailed;
+
   return (
     <div
       className="group relative rounded-3xl overflow-hidden transition-all duration-300 ease-out hover:-translate-y-1.5"
@@ -32,11 +42,13 @@ const RestaurantCard = ({ restaurant: r, onDelete, onEdit }: Props) => {
         className="relative w-full h-48 sm:h-52 overflow-hidden"
         style={{ background: "rgba(255,255,255,0.02)" }}
       >
-        {r.imageUrl ? (
+        {showImage ? (
           <>
             <img
-              src={r.imageUrl}
-              alt={r.name}
+              src={getOptimizedImageUrl(r.imageUrl)}
+              alt={`Photo of ${r.name}`}
+              loading="lazy"
+              onError={() => setImageFailed(true)}
               className="w-full h-full object-cover group-hover:scale-[1.06] transition-transform duration-700 ease-out"
             />
             {/* Multi-layer gradient for premium depth */}
@@ -237,4 +249,4 @@ const RestaurantCard = ({ restaurant: r, onDelete, onEdit }: Props) => {
   );
 };
 
-export default RestaurantCard;
+export default memo(RestaurantCard);
