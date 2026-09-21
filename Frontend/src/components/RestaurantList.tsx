@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import RestaurantCard from "./RestaurantCard";
 import ConfirmModal from "./ConfirmModal";
 import RestaurantModal from "./RestaurantFormModal";
@@ -66,16 +66,19 @@ const RestaurantList = ({
   const [mode, setMode] = useState<"create" | "edit">("create");
   const [editData, setEditData] = useState<Restaurant | null>(null);
 
-  const handleDeleteClick = (id: number) => {
+  // Memoized with an empty dependency array (only calls stable setState
+  // functions) so RestaurantCard — now wrapped in React.memo — can skip
+  // re-rendering when these identities stay the same across renders.
+  const handleDeleteClick = useCallback((id: number) => {
     setSelectedId(id);
     setConfirmOpen(true);
-  };
+  }, []);
 
-  const handleEdit = (restaurant: Restaurant) => {
+  const handleEdit = useCallback((restaurant: Restaurant) => {
     setEditData(restaurant);
     setMode("edit");
     setModalOpen(true);
-  };
+  }, []);
 
   const handleConfirm = async () => {
     if (!selectedId) return;
@@ -92,14 +95,14 @@ const RestaurantList = ({
   return (
     <>
       <div className="relative">
-        {/* 🔥 LOADING OVERLAY */}
+        {/* LOADING OVERLAY */}
         {loading && (
           <div className="absolute inset-0 z-10 flex items-center justify-center bg-black/40 backdrop-blur-sm rounded-2xl">
             <span className="text-white text-sm">Loading...</span>
           </div>
         )}
 
-        {/* 🔥 KEEP OLD DATA */}
+        {/* KEEP OLD DATA */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
           {restaurants.length === 0 ? (
             <EmptyState />

@@ -1,3 +1,5 @@
+import { memo } from "react";
+
 interface Props {
   currentPage: number;
   total: number;
@@ -45,4 +47,4 @@ const Pagination = ({ currentPage, total, limit, onPageChange }: Props) => {
   );
 };
 
-export default Pagination;
+export default memo(Pagination);
